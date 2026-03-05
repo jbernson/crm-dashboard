@@ -72,14 +72,16 @@ export default {
       store: false,
     };
 
-    const r = await fetch("https://api.openai.com/v1/responses", {
+    const r = await fetch("https://crm-ai-relay-2.jbernson.workers.dev/", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${env.OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
-    });
+body: JSON.stringify({
+  message: message,
+  contacts: slimContacts
+}),
 
     const data = await r.json();
 
