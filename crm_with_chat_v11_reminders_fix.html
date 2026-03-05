@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Division · BD Intelligence Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#1a2e42;--navy-mid:#243d57;--navy-light:#2e5070;
+  --gold:#c4a35a;--cream:#f5f3ef;--cream-mid:#ede9e1;--cream-dark:#ddd8cc;
+  --text:#1c1c1c;--text-mid:#444;--text-light:#777;--text-ghost:#aaa;
+  --green:#2d6b4a;--red:#8b2e2e;
+  --status-met:#1a3a5c;--status-sched:#1e6fa8;--status-active:#2d6b4a;--status-target:#8a9aac;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Source Serif 4',Georgia,serif;background:var(--cream);color:var(--text);min-height:100vh;}
+
+/* HEADER */
+.header{background:var(--navy);padding:24px 40px 0;border-bottom:3px solid var(--gold);position:sticky;top:0;z-index:50;}
+.header-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;}
+.header-eyebrow{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.header-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;color:var(--cream);}
+.header-sub{font-size:11px;color:#7090aa;margin-top:3px;font-style:italic;}
+.header-right{display:flex;align-items:flex-end;gap:20px;}
+.header-count{text-align:right;}
+.big-num{font-family:'Playfair Display',serif;font-size:40px;color:var(--gold);line-height:1;}
+.big-label{font-size:9px;color:#7090aa;letter-spacing:.12em;text-transform:uppercase;margin-top:2px;}
+.save-btn{padding:10px 20px;background:var(--gold);color:var(--navy);border:none;border-radius:2px;font-family:'Source Serif 4',serif;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.05em;white-space:nowrap;transition:all .15s;margin-bottom:4px;}
+.save-btn:hover{background:var(--gold-light,#ddc07a);transform:translateY(-1px);}
+.unsaved-dot{display:inline-block;width:7px;height:7px;background:#e85;border-radius:50%;margin-right:6px;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* NAV */
+.nav{display:flex;gap:3px;}
+.nav-btn{padding:8px 18px;border:none;background:transparent;color:#7090aa;font-family:'Source Serif 4',serif;font-size:12px;letter-spacing:.06em;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-3px;transition:all .15s;}
+.nav-btn:hover{color:var(--cream);}
+.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:600;}
+
+/* CONTENT */
+.content{padding:28px 40px 60px;}
+.view{display:none;}.view.active{display:block;}
+
+/* KPIs */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:11px;margin-bottom:22px;}
+.kpi-card{background:#fff;border:1px solid var(--cream-dark);padding:14px 16px;border-radius:2px;border-top:3px solid var(--navy);}
+.kpi-num{font-family:'Playfair Display',serif;font-size:30px;line-height:1;margin-bottom:4px;}
+.kpi-label{font-size:11px;font-weight:600;color:var(--text-mid);}
+.kpi-sub{font-size:10px;color:var(--text-ghost);margin-top:2px;}
+
+/* PANELS */
+.panel-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.panel{background:#fff;border:1px solid var(--cream-dark);border-radius:2px;padding:20px 22px;}
+.panel-title{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-ghost);margin-bottom:16px;padding-bottom:9px;border-bottom:1px solid var(--cream-mid);}
+.bar-track{height:8px;background:var(--cream-mid);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;transition:width .7s cubic-bezier(.4,0,.2,1);}
+.temp-row{margin-bottom:10px;}
+.temp-row-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;}
+.temp-row-label span:last-child{color:var(--text-ghost);font-size:10px;}
+.camp-row{margin-bottom:14px;}
+.camp-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:12px;}
+.camp-name{font-weight:600;display:flex;align-items:center;gap:6px;}
+.camp-dot{width:9px;height:9px;border-radius:1px;flex-shrink:0;}
+.camp-meta{font-size:10px;color:var(--text-ghost);}
+.camp-stack{display:flex;gap:2px;height:18px;}
+.camp-seg{border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;min-width:18px;}
+.org-strip{display:flex;background:#fff;border:1px solid var(--cream-dark);border-radius:2px;overflow:hidden;margin-bottom:16px;}
+.org-seg{padding:18px 20px;display:flex;flex-direction:column;gap:6px;}
+.org-num{font-family:'Playfair Display',serif;font-size:26px;color:#fff;line-height:1;}
+.org-name{font-size:11px;color:rgba(255,255,255,.8);}
+.org-pct{font-size:10px;color:rgba(255,255,255,.4);}
+
+/* CONTACTS TABLE */
+.toolbar{display:flex;gap:6px;margin-bottom:14px;align-items:center;flex-wrap:wrap;}
+.filter-label{font-size:10px;color:var(--text-ghost);letter-spacing:.12em;text-transform:uppercase;margin-right:2px;}
+.filter-btn{padding:5px 13px;border:1px solid var(--cream-dark);background:transparent;color:var(--text-mid);font-family:'Source Serif 4',serif;font-size:11px;border-radius:2px;cursor:pointer;transition:all .1s;}
+.filter-btn:hover{background:var(--cream-mid);}
+.filter-btn.active{background:var(--navy);color:var(--cream);border-color:var(--navy);}
+.add-btn{padding:6px 16px;background:var(--green);color:#fff;border:none;border-radius:2px;font-family:'Source Serif 4',serif;font-size:11px;font-weight:600;cursor:pointer;margin-left:auto;transition:all .1s;}
+.add-btn:hover{filter:brightness(1.1);}
+.count-lbl{font-size:11px;color:var(--text-ghost);font-style:italic;margin-left:8px;}
+
+.table-wrap{background:#fff;border:1px solid var(--cream-dark);border-radius:2px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--navy);}
+th{padding:9px 12px;text-align:left;font-size:9px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:#7090aa;white-space:nowrap;}
+tbody tr{transition:background .08s;}
+tbody tr:nth-child(even) td{background:#faf9f6;}
+tbody tr:hover td{background:var(--cream-mid)!important;}
+td{padding:8px 12px;font-size:11px;color:var(--text-mid);border-bottom:1px solid var(--cream-mid);vertical-align:middle;}
+td.name-cell{font-weight:600;color:var(--navy);font-size:12px;}
+.tag{display:inline-block;font-size:9px;padding:2px 6px;border-radius:2px;letter-spacing:.03em;white-space:nowrap;}
+.stars{font-size:10px;color:var(--gold);letter-spacing:-1px;}
+
+/* QUICK CHANGE DROPDOWNS */
+.quick-sel{font-size:11px;padding:3px 6px;border:1px solid var(--cream-dark);border-radius:2px;background:#fff;font-family:'Source Serif 4',serif;cursor:pointer;color:var(--text-mid);max-width:130px;}
+.quick-sel:focus{outline:2px solid var(--gold);outline-offset:1px;}
+
+/* ACTION BTNS */
+.action-btn{padding:4px 10px;border:1px solid;border-radius:2px;font-size:10px;font-family:'Source Serif 4',serif;cursor:pointer;transition:all .1s;white-space:nowrap;}
+.edit-btn{background:transparent;border-color:var(--navy-light);color:var(--navy-light);}
+.edit-btn:hover{background:var(--navy);color:#fff;}
+.delete-btn{background:transparent;border-color:#b94a48;color:#b94a48;}
+.delete-btn:hover{background:#b94a48;color:#fff;}
+
+/* MODAL - EDIT */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,25,38,.75);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;width:680px;max-width:94vw;max-height:90vh;overflow-y:auto;border-radius:3px;box-shadow:0 30px 90px rgba(0,0,0,.45);animation:modalIn .2s ease both;}
+@keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.modal-header{background:var(--navy);padding:20px 26px;position:sticky;top:0;z-index:5;}
+.modal-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--cream);}
+.modal-subtitle{font-size:11px;color:#7090aa;margin-top:3px;}
+.modal-close{position:absolute;top:14px;right:18px;background:transparent;border:none;color:#7090aa;font-size:18px;cursor:pointer;}
+.modal-close:hover{color:var(--cream);}
+.modal-body{padding:24px 26px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group.full{grid-column:1/-1;}
+.form-label{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-ghost);}
+.form-input,.form-select,.form-textarea{padding:8px 10px;border:1px solid var(--cream-dark);border-radius:2px;font-family:'Source Serif 4',serif;font-size:12px;color:var(--text);background:#fff;transition:border-color .1s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--gold);}
+.form-textarea{min-height:70px;resize:vertical;}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;padding:16px 26px;border-top:1px solid var(--cream-mid);background:#faf9f6;}
+.btn-save{padding:9px 22px;background:var(--navy);color:#fff;border:none;border-radius:2px;font-family:'Source Serif 4',serif;font-size:12px;font-weight:600;cursor:pointer;}
+.btn-save:hover{background:var(--navy-light);}
+.btn-cancel{padding:9px 18px;background:transparent;color:var(--text-mid);border:1px solid var(--cream-dark);border-radius:2px;font-family:'Source Serif 4',serif;font-size:12px;cursor:pointer;}
+.btn-cancel:hover{background:var(--cream-mid);}
+
+/* ADD FORM PANEL */
+.add-panel{background:#fff;border:2px dashed var(--cream-dark);border-radius:3px;padding:24px 26px;margin-bottom:18px;display:none;}
+.add-panel.open{display:block;animation:fadeUp .2s ease both;}
+.add-panel-title{font-family:'Playfair Display',serif;font-size:15px;color:var(--navy);margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--cream-mid);}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--navy);color:var(--cream);padding:12px 20px;border-radius:3px;font-size:12px;border-left:3px solid var(--gold);box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:300;animation:toastIn .25s ease both;pointer-events:none;}
+.toast.hide{animation:toastOut .3s ease both;}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(10px)}}
+
+/* QUADRANT */
+.quadrant-wrap{background:#fff;border:1px solid var(--cream-dark);border-radius:2px;padding:22px;}
+.quadrant-area{position:relative;height:400px;border:1px solid var(--cream-mid);border-radius:2px;}
+.q-line-v{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--cream-dark);z-index:1;}
+.q-line-h{position:absolute;top:50%;left:0;right:0;height:1px;background:var(--cream-dark);z-index:1;}
+.q-label{position:absolute;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--cream-dark);pointer-events:none;}
+.bubble{position:absolute;border-radius:50%;cursor:pointer;z-index:3;transform:translate(-50%,-50%);transition:transform .15s;border:2px solid transparent;}
+.bubble:hover{transform:translate(-50%,-50%) scale(1.8);z-index:10;}
+.quad-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;padding-top:11px;border-top:1px solid var(--cream-mid);font-size:10px;color:var(--text-ghost);}
+.legend-item{display:flex;align-items:center;gap:5px;}
+.legend-swatch{width:11px;height:11px;border-radius:50%;border:2px solid transparent;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-eyebrow">Global Division · Business Development</div>
+      <div class="header-title">Relationship Intelligence Dashboard</div>
+      <div class="header-sub">January – March 2026 &nbsp;·&nbsp; Pre-Capture Pipeline</div>
+    </div>
+    <div class="header-right">
+      <div style="text-align:right;">
+        <div class="big-num" id="totalCount">—</div>
+        <div class="big-label">Total Contacts</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding-bottom:4px;">
+        <button class="save-btn" id="saveBtn" onclick="downloadCSV()">⬇ Save &amp; Download CSV</button>
+        <div id="unsavedIndicator" style="font-size:10px;color:#7090aa;display:none;">
+          <span class="unsaved-dot"></span>Unsaved changes
+        </div>
+      </div>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showView('overview',this)">Overview</button>
+    <button class="nav-btn" onclick="showView('contacts',this)">Contacts &amp; Edit</button>
+    <button class="nav-btn" onclick="showView('pipeline',this)">Pipeline</button>
+    <button class="nav-btn" onclick="showView('relationships',this)">Relationships</button>
+  </nav>
+</div>
+
+<div class="content">
+
+  <!-- OVERVIEW -->
+  <div class="view active" id="view-overview">
+    <div class="kpi-grid" id="kpi-grid"></div>
+    <div class="panel-grid-2">
+      <div class="panel">
+        <div class="panel-title">Relationship Temperature</div>
+        <div id="temp-bars"></div>
+        <div id="temp-insight" style="margin-top:12px;padding:9px 11px;background:var(--cream);border-radius:2px;font-size:11px;color:#555;font-style:italic;line-height:1.5;"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Campaign Coverage &amp; Status</div>
+        <div id="camp-bars"></div>
+        <div style="display:flex;gap:14px;margin-top:12px;font-size:10px;color:var(--text-ghost);">
+          <span><span style="display:inline-block;width:9px;height:9px;background:var(--status-met);border-radius:1px;margin-right:3px;vertical-align:middle;"></span>Met</span>
+          <span><span style="display:inline-block;width:9px;height:9px;background:var(--status-sched);border-radius:1px;margin-right:3px;vertical-align:middle;"></span>Scheduled</span>
+          <span><span style="display:inline-block;width:9px;height:9px;background:var(--status-active);border-radius:1px;margin-right:3px;vertical-align:middle;"></span>Active Target</span>
+          <span><span style="display:inline-block;width:9px;height:9px;background:var(--status-target);border-radius:1px;margin-right:3px;vertical-align:middle;"></span>Target</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px;">
+      <div class="panel-title">Follow-up Radar</div>
+      <div id="reminders-summary" style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#555;margin-bottom:10px;"></div>
+      <div id="reminders-list"></div>
+      <div style="margin-top:10px;font-size:10px;color:var(--text-ghost);line-height:1.4;">
+        Tip: set <b>nextStepDue</b> or <b>reminderDate</b> on a contact (YYYY-MM-DD). Use “📅 Add” to download an .ics calendar invite.
+      </div>
+    </div>
+
+    <div class="org-strip" id="org-strip"></div>
+    <div class="panel">
+      <div class="panel-title">Node Type Distribution</div>
+      <div id="node-bars" style="display:grid;grid-template-columns:1fr 1fr;gap:9px 22px;"></div>
+    </div>
+  </div>
+
+  <!-- CONTACTS & EDIT -->
+  <div class="view" id="view-contacts">
+
+    <!-- ADD FORM -->
+    <div class="add-panel" id="addPanel">
+      <div class="add-panel-title">+ Add New Contact</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Full Name *</label><input class="form-input" id="new-name" placeholder="First Last"></div>
+        <div class="form-group"><label class="form-label">Organization *</label><input class="form-input" id="new-org" placeholder="Organization name"></div>
+        <div class="form-group"><label class="form-label">Org Type</label>
+          <select class="form-select" id="new-orgType">
+            <option>Foundation</option><option>Government</option><option>Implementer</option>
+            <option>Implementer/Consulting</option><option>Government/Global Health</option>
+            <option>Philanthropy / Evaluator</option><option>Nonprofit Research Institute</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Title / Role</label><input class="form-input" id="new-role" placeholder="Title"></div>
+        <div class="form-group"><label class="form-label">Campaign</label>
+          <select class="form-select" id="new-campaign">
+            <option>Gates</option><option>Gates Adjacent</option><option>DoS</option>
+            <option>DoS Adjacent</option><option>DoS / Implementers</option>
+            <option>Philanthropy – GiveWell</option><option>Strategic Outreach – Seattle Ecosystem</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Portfolio Area</label><input class="form-input" id="new-portfolio" placeholder="Topic area"></div>
+        <div class="form-group"><label class="form-label">Status</label>
+          <select class="form-select" id="new-status">
+            <option>Target</option><option>Active target</option><option>Scheduled</option>
+            <option>Met</option><option>Active relationship</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Temperature</label>
+          <select class="form-select" id="new-temp">
+            <option>Very warm advocate</option><option>Warm advocate</option><option>Strong</option>
+            <option>Warm</option><option>Friendly</option><option>Neutral</option><option>Unknown</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Influence (1–5)</label>
+          <select class="form-select" id="new-influence"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Relationship Category</label><input class="form-input" id="new-relCat" placeholder="e.g. Buyer/Influencer"></div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="new-location" placeholder="City"></div>
+        <div class="form-group"><label class="form-label">Owner</label><input class="form-input" id="new-owner" value="Jeff"></div>
+        <div class="form-group"><label class="form-label">Node Type</label><input class="form-input" id="new-nodeType" placeholder="e.g. Revenue Node"></div>
+        <div class="form-group"><label class="form-label">Last Contact Date</label><input class="form-input" id="new-lastContact" type="date"></div>
+        <div class="form-group full"><label class="form-label">Next Step</label><input class="form-input" id="new-nextStep" placeholder="What happens next?"></div>
+        <div class="form-group full"><label class="form-label">Notes</label><textarea class="form-textarea" id="new-notes" placeholder="Background, signals, context..."></textarea></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end;">
+        <button class="btn-cancel" onclick="toggleAddPanel()">Cancel</button>
+        <button class="btn-save" onclick="saveNewContact()">Add Contact</button>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar" id="filter-row">
+      <span class="filter-label">Campaign:</span>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Name</th><th>Organization</th><th>Status</th><th>Temperature</th>
+          <th>Influence</th><th>Campaign</th><th>Node Type</th><th>Next Step</th><th>Edit</th><th>Delete</th>
+        </tr></thead>
+        <tbody id="contacts-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PIPELINE -->
+  <div class="view" id="view-pipeline">
+    <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-ghost);margin-bottom:16px;">Relationship Pipeline — Click any card to edit</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;" id="pipeline-grid"></div>
+  </div>
+
+  <!-- RELATIONSHIPS -->
+  <div class="view" id="view-relationships">
+    <div class="quadrant-wrap">
+      <div class="panel-title">Strategic Influence Matrix — Influence vs. Relationship Warmth</div>
+      <div style="font-size:11px;color:var(--text-ghost);margin-bottom:14px;font-style:italic;">Upper-right = highest-priority. Hover to identify. Click to edit.</div>
+      <div class="quadrant-area" id="quadrant-area">
+        <div class="q-line-v"></div><div class="q-line-h"></div>
+        <div class="q-label" style="top:9px;right:12px;">High Influence · Warm</div>
+        <div class="q-label" style="top:9px;left:12px;">Low Influence · Warm</div>
+        <div class="q-label" style="bottom:9px;right:12px;">High Influence · Cool</div>
+        <div class="q-label" style="bottom:9px;left:12px;">Low Influence · Cool</div>
+      </div>
+      <div class="quad-legend" id="quad-legend"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal" onclick="closeEditModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <button class="modal-close" onclick="document.getElementById('editModal').classList.remove('open')">✕</button>
+      <div class="modal-title" id="editModalTitle">Edit Contact</div>
+      <div class="modal-subtitle" id="editModalSub"></div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="edit-name"></div>
+        <div class="form-group"><label class="form-label">Organization</label><input class="form-input" id="edit-org"></div>
+        <div class="form-group"><label class="form-label">Org Type</label>
+          <select class="form-select" id="edit-orgType">
+            <option>Foundation</option><option>Government</option><option>Implementer</option>
+            <option>Implementer/Consulting</option><option>Government/Global Health</option>
+            <option>Philanthropy / Evaluator</option><option>Nonprofit Research Institute</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Title / Role</label><input class="form-input" id="edit-role"></div>
+        <div class="form-group"><label class="form-label">Relationship Category</label><input class="form-input" id="edit-relCat"></div>
+        <div class="form-group"><label class="form-label">Campaign</label>
+          <select class="form-select" id="edit-campaign">
+            <option>Gates</option><option>Gates Adjacent</option><option>DoS</option>
+            <option>DoS Adjacent</option><option>DoS / Implementers</option>
+            <option>Philanthropy – GiveWell</option><option>Strategic Outreach – Seattle Ecosystem</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Portfolio Area</label><input class="form-input" id="edit-portfolio"></div>
+        <div class="form-group"><label class="form-label">Status</label>
+          <select class="form-select" id="edit-status">
+            <option>Target</option><option>Active target</option><option>Scheduled</option>
+            <option>Met</option><option>Active relationship</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Temperature</label>
+          <select class="form-select" id="edit-temp">
+            <option>Very warm advocate</option><option>Warm advocate</option><option>Strong</option>
+            <option>Warm</option><option>Friendly</option><option>Neutral</option><option>Unknown</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Influence (1–5)</label>
+          <select class="form-select" id="edit-influence"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="edit-location"></div>
+        <div class="form-group"><label class="form-label">Owner</label><input class="form-input" id="edit-owner"></div>
+        <div class="form-group"><label class="form-label">Node Type</label><input class="form-input" id="edit-nodeType"></div>
+        <div class="form-group"><label class="form-label">Last Contact Date</label><input class="form-input" id="edit-lastContact" type="date"></div>
+        <div class="form-group full"><label class="form-label">Next Step</label><input class="form-input" id="edit-nextStep"></div>
+        <div class="form-group full"><label class="form-label">Notes</label><textarea class="form-textarea" id="edit-notes"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="document.getElementById('editModal').classList.remove('open')">Cancel</button>
+      <button class="btn-cancel" style="border-color:#b94a48;color:#b94a48;" onclick="deleteContact(document.getElementById('edit-id').value)">Delete Contact</button><button class="btn-save" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast" style="display:none;"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+let contacts = [
+  {id:"C-0001",name:"Ashley Jackson",org:"Gates Foundation",orgType:"Foundation",role:"Program Officer",relCat:"Influencer",influence:4,temp:"Warm advocate",campaign:"Gates",portfolio:"Women's Health / Data",location:"Seattle",lastContact:"2025-02-11",nextStep:"Nudge for warm intro to Prachi; confirm May coffee/walk",owner:"Jeff",notes:"Advocate; will introduce Prachi Vora; STI & HMB health econ likely 2027.",status:"Met",nodeType:"Revenue Node"},
+  {id:"C-0002",name:"Prachi Vora",org:"Gates Foundation",orgType:"Foundation",role:"Senior Program Officer",relCat:"Buyer/Influencer",influence:3,temp:"Unknown",campaign:"Gates",portfolio:"Women's Health Data (STI, HMB)",location:"Seattle",lastContact:"",nextStep:"Await warm intro from Ashley",owner:"Jeff",notes:"Potential buyer; exploratory conversation pending.",status:"Target",nodeType:"Revenue Node"},
+  {id:"C-0003",name:"Kaitlin Christianson",org:"Gates Foundation",orgType:"Foundation",role:"Senior Program Officer",relCat:"Intelligence",influence:3,temp:"Warm",campaign:"Gates",portfolio:"Foundation ops / PAC",location:"Seattle",lastContact:"2026-02-05",nextStep:"Maintain light-touch cadence",owner:"Jeff",notes:"Intel: restructuring; PAC disassembly; feedback on PAC work.",status:"Met",nodeType:"Revenue Node"},
+  {id:"C-0004",name:"Douglas Call",org:"Gates Foundation",orgType:"Foundation",role:"Senior Program Officer",relCat:"Buyer/Influencer",influence:3,temp:"Warm",campaign:"Gates",portfolio:"Market Visibility Initiative",location:"Seattle",lastContact:"",nextStep:"Internal follow-up with Daniel + Chris; next touchpoint TBD",owner:"Jeff",notes:"Strategic dialogue: market visibility/data platform thread.",status:"Met",nodeType:"Revenue Node"},
+  {id:"C-0005",name:"Janet Zhou",org:"Gates Foundation",orgType:"Foundation",role:"Deputy Director",relCat:"Influencer",influence:3,temp:"Strong",campaign:"Gates",portfolio:"AI strategy / portfolio tooling",location:"Seattle",lastContact:"",nextStep:"Continue dialogue; pursue intro to Sarah Metzger",owner:"Jeff",notes:"AI/portfolio governance conversation; potential influence.",status:"Met",nodeType:"Revenue Node"},
+  {id:"C-0006",name:"Keith Zander",org:"Gates Foundation",orgType:"Foundation",role:"DDSPM, GGO",relCat:"Influencer",influence:3,temp:"Friendly",campaign:"Gates",portfolio:"GGO performance / positioning",location:"Seattle",lastContact:"",nextStep:"Schedule in-person check-in",owner:"Jeff",notes:"Performance review + positioning; possible board presentation angle.",status:"Met",nodeType:"Revenue Node"},
+  {id:"C-0007",name:"Anna Rapp",org:"Gates Foundation",orgType:"Foundation",role:"Program Officer (Immunization)",relCat:"Influencer",influence:3,temp:"Warm",campaign:"Gates",portfolio:"Immunization learning",location:"Seattle",lastContact:"",nextStep:"Meeting set for March 13",owner:"Jeff",notes:"Learning support exploratory.",status:"Met",nodeType:"Revenue Node"},
+  {id:"C-0008",name:"Matt Steele",org:"Gates Foundation",orgType:"Foundation",role:"(Title TBD)",relCat:"Influencer",influence:2,temp:"Warm",campaign:"Gates",portfolio:"General",location:"Seattle",lastContact:"2026-01-06",nextStep:"Backfill meeting details",owner:"Jeff",notes:"Logged date only; details needed.",status:"Met",nodeType:"Revenue Node"},
+  {id:"C-0009",name:"Laurie Werner",org:"Gates Foundation",orgType:"Foundation",role:"Independent Contractor",relCat:"Intelligence",influence:2,temp:"Neutral",campaign:"Gates",portfolio:"Ops / procurement mechanics",location:"Seattle",lastContact:"2026-01-07",nextStep:"Backfill details; keep as intel node",owner:"Jeff",notes:"Logged date only; details needed.",status:"Met",nodeType:"Revenue Node"},
+  {id:"C-0010",name:"Bhavya Gowda",org:"R4D / Americares",orgType:"Implementer",role:"Market Dynamics Lead; Incoming VP (Americares)",relCat:"Talent",influence:4,temp:"Warm",campaign:"Gates Adjacent",portfolio:"Market dynamics / MLE talent",location:"",lastContact:"",nextStep:"Continue candidate review; maintain relationship as she transitions",owner:"Jeff",notes:"Provided MLE talent leads; already in follow-up on candidates.",status:"Met",nodeType:"Revenue Node"},
+  {id:"C-0011",name:"Todd Diamond",org:"Chemonics",orgType:"Implementer",role:"(recently left)",relCat:"Intelligence",influence:2,temp:"Neutral",campaign:"DoS Adjacent",portfolio:"Implementer landscape",location:"",lastContact:"2026-02-02",nextStep:"No follow-up needed",owner:"Jeff",notes:"Intel: Chemonics shrinkage; ~200-400 staff remaining.",status:"Met",nodeType:""},
+  {id:"C-0012",name:"Kammerle Schneider",org:"PATH",orgType:"Implementer",role:"(Title TBD)",relCat:"Intelligence",influence:2,temp:"Neutral",campaign:"Gates Adjacent",portfolio:"Funding mechanisms (STRIDES/REACH)",location:"",lastContact:"",nextStep:"Explore mechanism strategy as needed",owner:"Jeff",notes:"Intel gathering on USAID mechanisms.",status:"Met",nodeType:"Revenue Node"},
+  {id:"C-0013",name:"Neha Argwal",org:"PATH",orgType:"Implementer",role:"Director of Strategy",relCat:"Partner/Influencer",influence:3,temp:"Warm",campaign:"Gates Adjacent",portfolio:"Strategy / partnerships",location:"",lastContact:"2026-02-25",nextStep:"Assess alignment and partnership opportunities",owner:"Jeff",notes:"Strategic conversation on PATH direction amid funding shifts.",status:"Met",nodeType:"Revenue Node"},
+  {id:"C-0014",name:"Hannah Cooper",org:"Cooper/Smith",orgType:"Implementer/Consulting",role:"Senior leader",relCat:"Partner",influence:3,temp:"Neutral",campaign:"Gates Adjacent",portfolio:"AI evidence reviews / RAG",location:"",lastContact:"",nextStep:"Send DC dates; explore partnership",owner:"Jeff",notes:"Partnership exploration.",status:"Met",nodeType:"Revenue Node"},
+  {id:"C-0015",name:"Caroline Quijada",org:"Independent (former Abt)",orgType:"Implementer/Consulting",role:"Contractor; former Abt SVP",relCat:"Intelligence/Partner",influence:3,temp:"Warm",campaign:"DoS / Implementers",portfolio:"USAID/DoS ties",location:"Washington, DC",lastContact:"2026-02-23",nextStep:"Maintain relationship; potential access node",owner:"Jeff",notes:"Washington insider; bridge into legacy USAID/DoS networks.",status:"Met",nodeType:""},
+  {id:"C-0016",name:"Allison Cantrell",org:"U.S. House (Rep. Mast Office)",orgType:"Government",role:"Staffer",relCat:"Intelligence",influence:2,temp:"Neutral",campaign:"DoS Adjacent",portfolio:"Foreign assistance posture",location:"Washington, DC",lastContact:"2026-02-23",nextStep:"No immediate follow-up; keep as intel channel",owner:"Jeff",notes:"Congressional staff engagement; oversight climate scan.",status:"Met",nodeType:""},
+  {id:"C-0017",name:"Danice Guzman",org:"(Org TBD)",orgType:"Government/Global Health",role:"(Role TBD)",relCat:"Intelligence/Influencer",influence:3,temp:"Warm",campaign:"DoS Adjacent",portfolio:"Foreign assistance architecture",location:"Washington, DC",lastContact:"",nextStep:"Backfill dates; capture key signals",owner:"Jeff",notes:"Met in DC and follow-up; needs details.",status:"Met",nodeType:""},
+  {id:"C-0018",name:"Halley Hill",org:"Gates Foundation",orgType:"Foundation",role:"Chief of Staff, Global Development Div.",relCat:"Influencer",influence:3,temp:"Warm",campaign:"Gates",portfolio:"Impact Accounting / Global Development",location:"Seattle",lastContact:"",nextStep:"Meeting scheduled (date TBD); prepare Impact Accounting discussion points",owner:"Jeff",notes:"Meeting set; follow-up on Impact Accounting adoption.",status:"Scheduled",nodeType:"Revenue Node"},
+  {id:"C-0019",name:"Sarah Metzger",org:"Gates Foundation",orgType:"Foundation",role:"(AI tooling/program portfolio)",relCat:"Influencer",influence:3,temp:"Neutral",campaign:"Gates",portfolio:"AI tooling adoption",location:"Seattle",lastContact:"",nextStep:"Await intro request via Janet Zhou",owner:"Jeff",notes:"Potential comparison notes on AI governance.",status:"Target",nodeType:"Revenue Node"},
+  {id:"C-0020",name:"Chris Elias",org:"Gates Foundation",orgType:"Foundation",role:"President, Global Development Division",relCat:"Influencer",influence:5,temp:"Neutral",campaign:"Gates",portfolio:"Global Development leadership",location:"Seattle",lastContact:"",nextStep:"No direct action; contextual stakeholder via Halley",owner:"Jeff",notes:"Key executive stakeholder; no direct contact yet.",status:"Target",nodeType:"Revenue Node"},
+  {id:"C-0021",name:"Philip Welkoff",org:"Gates Foundation",orgType:"Foundation",role:"(Title TBD)",relCat:"Influencer",influence:3,temp:"Neutral",campaign:"Gates",portfolio:"(TBD)",location:"Seattle",lastContact:"",nextStep:"Have assistant reach out to schedule meeting",owner:"Jeff",notes:"On target list to meet.",status:"Target",nodeType:"Revenue Node"},
+  {id:"C-0022",name:"Kaitlin Christenson",org:"Gates Foundation",orgType:"Foundation",role:"(Title TBD)",relCat:"Influencer",influence:3,temp:"Warm",campaign:"Gates",portfolio:"(TBD)",location:"Seattle",lastContact:"",nextStep:"Have assistant reach out to schedule meeting",owner:"Jeff",notes:"On target list to meet.",status:"Target",nodeType:"Revenue Node"},
+  {id:"C-0023",name:"Nushina Mir",org:"Gates Foundation",orgType:"Foundation",role:"Deputy Director (PAC) - MEL point person",relCat:"Decision-maker / Influencer",influence:4,temp:"Warm",campaign:"Gates",portfolio:"PAC (MEL governance)",location:"Seattle",lastContact:"",nextStep:"Follow up; press Drew Koleros for warm intro; optional LinkedIn note re: paper co-authorship",owner:"Jeff",notes:"Happy with Mathematica's GAVI evaluation. Accepted co-authorship on Evaluation journal special issue paper.",status:"Active target",nodeType:"Influence Node / Intellectual Node"},
+  {id:"C-0024",name:"Hannah Smith",org:"Cooper/Smith",orgType:"Implementer/Consulting",role:"CEO",relCat:"Influencer",influence:3,temp:"Warm",campaign:"Gates Adjacent",portfolio:"AI / Data science",location:"Seattle",lastContact:"",nextStep:"Consider CEO-level touchpoint if partnership progresses",owner:"Jeff",notes:"Mentioned as CEO; potential future contact.",status:"Target",nodeType:"Revenue Node"},
+  {id:"C-0025",name:"DoS Private Round Table",org:"U.S. Dept of State",orgType:"Government",role:"Convening",relCat:"Convening",influence:2,temp:"Neutral",campaign:"DoS",portfolio:"Foreign assistance architecture",location:"Washington, DC",lastContact:"",nextStep:"Log attendee list; capture key insights",owner:"Jeff",notes:"Convening touchpoint; not a 1:1.",status:"Met",nodeType:""},
+  {id:"C-0026",name:"James Maloney",org:"U.S. Dept of State",orgType:"Government",role:"Director Bureau of Global Health",relCat:"Influencer",influence:5,temp:"Neutral",campaign:"DoS",portfolio:"Foreign assistance architecture",location:"Washington, DC",lastContact:"",nextStep:"Need intro",owner:"Jeff",notes:"Had a quick intro at private round table.",status:"Met",nodeType:""},
+  {id:"C-0027",name:"Emma Reinhalter",org:"MCC",orgType:"Government",role:"SPO",relCat:"Intelligence/Influencer",influence:2,temp:"Warm",campaign:"DoS",portfolio:"Foreign assistance architecture",location:"Washington, DC",lastContact:"",nextStep:"Have assistant reach out to schedule meeting",owner:"Jeff",notes:"Post convening conversation. Good follow up to AI at MCC.",status:"Met",nodeType:""},
+  {id:"C-0028",name:"Tariq Ahmad",org:"MCC",orgType:"Government",role:"Policy Advisor",relCat:"Intelligence/Influencer",influence:2,temp:"Neutral",campaign:"DoS",portfolio:"Foreign assistance architecture",location:"Washington, DC",lastContact:"",nextStep:"Have assistant reach out to schedule meeting",owner:"Jeff",notes:"Post convening conversation.",status:"Met",nodeType:""},
+  {id:"C-0029",name:"Sarah Dominis",org:"U.S. Dept of State",orgType:"Government/Global Health",role:"(Role TBD)",relCat:"Intelligence/Influencer",influence:3,temp:"Unknown",campaign:"DoS",portfolio:"Foreign assistance architecture",location:"Washington, DC",lastContact:"",nextStep:"Have assistant reach out to schedule meeting",owner:"Jeff",notes:"Post convening conversation.",status:"Met",nodeType:""},
+  {id:"C-0031",name:"Sanjana Bhardwaj",org:"Gates Foundation",orgType:"Foundation",role:"Deputy Director, PAC",relCat:"Decision-maker",influence:4,temp:"Warm",campaign:"Gates",portfolio:"PAC / MNCNH transition",location:"(TBD)",lastContact:"",nextStep:"Secure warm intro via Matt Steele; then schedule 1:1 to reposition beyond dashboards",owner:"Jeff",notes:"Knows Mathematica for strong dashboard delivery; not yet aware of broader Data Solutions services.",status:"Active target",nodeType:"Platform Node"},
+  {id:"C-0032",name:"Jane Fortson",org:"GiveWell",orgType:"Philanthropy / Evaluator",role:"Senior Program Officer",relCat:"Advocate / Former direct report",influence:2,temp:"Very warm advocate",campaign:"Philanthropy – GiveWell",portfolio:"MERL / Decision Intelligence exploration",location:"Seattle",lastContact:"",nextStep:"In-person meeting; explore MERL/Decision Intelligence support and TA pathways",owner:"Jeff",notes:"Former Mathematica direct report. Strong advocate for capabilities. Meeting 3/12.",status:"Active target",nodeType:"Ecosystem Node / Advocate Node"},
+  {id:"C-0033",name:"Michael Kollins",org:"Institute for Systems Biology",orgType:"Nonprofit Research Institute",role:"Executive Vice President & COO",relCat:"Influencer / Connector",influence:5,temp:"Very warm advocate",campaign:"Strategic Outreach – Seattle Ecosystem",portfolio:"Strategy / Measurement potential",location:"Seattle",lastContact:"",nextStep:"Lunch discussion; explore strategy development and measurement opportunities at ISB",owner:"Jeff",notes:"Former PATH contact; very warm personally. High influence in org. Potential connector.",status:"Active relationship",nodeType:"Ecosystem Node"},
+];
+
+// ── CONSTANTS ─────────────────────────────────────────────────────────────
+const TEMP_COLOR=t=>{
+  if(!t)return"#ccc";
+  const tl=t.toLowerCase();
+  if(tl.includes("very warm")||tl.includes("very warm advocate"))return"#1a4a2e";
+  if(tl.includes("warm advocate"))return"#2d6a4f";
+  if(tl.includes("strong"))return"#40916c";
+  if(tl.includes("warm"))return"#74c69d";
+  if(tl.includes("friendly"))return"#95d5b2";
+  if(tl.includes("neutral"))return"#b0aa98";
+  return"#d5d1c8";
+};
+const TEMP_SCORE=t=>{
+  if(!t)return 0;
+  const tl=t.toLowerCase();
+  if(tl.includes("very warm"))return 6;
+  if(tl.includes("warm advocate"))return 5;
+  if(tl.includes("strong"))return 4;
+  if(tl.includes("warm"))return 3;
+  if(tl.includes("friendly"))return 2;
+  if(tl.includes("neutral"))return 1;
+  return 0;
+};
+const CAMP_COLOR={"Gates":"#1d4e7f","Gates Adjacent":"#2a7d5e","DoS":"#7a3b1e","DoS Adjacent":"#9e5c2a","DoS / Implementers":"#b07040","Philanthropy – GiveWell":"#5a3d7a","Strategic Outreach – Seattle Ecosystem":"#3d6b8a"};
+const STATUS_COLOR={"Met":"#1a3a5c","Scheduled":"#1e6fa8","Active target":"#2d6b4a","Active relationship":"#2d6b4a","Target":"#8a9aac"};
+
+let hasUnsaved=false;
+function markUnsaved(){
+  hasUnsaved=true;
+  document.getElementById('unsavedIndicator').style.display='block';
+}
+function markSaved(){
+  hasUnsaved=false;
+  document.getElementById('unsavedIndicator').style.display='none';
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block'; t.classList.remove('hide');
+  setTimeout(()=>{t.classList.add('hide');setTimeout(()=>t.style.display='none',320);},2500);
+}
+
+// ── CSV DOWNLOAD ──────────────────────────────────────────────────────────
+function downloadCSV(){
+  const cols=["Contact_ID","Full_Name","Organization","Org_Type","Title_Role","Relationship_Category","Influence_Level_1to5","Temperature","Primary_Campaign","Portfolio_Area","Location","Last_Contact_Date","Next_Step","Owner","Notes_Short","Status","Node_Type"];
+  const rows=contacts.map(c=>[
+    c.id,c.name,c.org,c.orgType,c.role,c.relCat,c.influence,c.temp,
+    c.campaign,c.portfolio,c.location,c.lastContact,c.nextStep,c.owner,c.notes,c.status,c.nodeType
+  ].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv=[cols.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='CRM_Contacts_Export_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  markSaved();
+  showToast('✓ CSV downloaded successfully');
+}
+
+// ── NEXT AVAILABLE ID ─────────────────────────────────────────────────────
+function nextId(){
+  const nums=contacts.map(c=>parseInt(c.id.replace('C-',''))||0);
+  return 'C-'+(Math.max(...nums)+1).toString().padStart(4,'0');
+}
+
+// ── ADD CONTACT ───────────────────────────────────────────────────────────
+function toggleAddPanel(){
+  const p=document.getElementById('addPanel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')) document.getElementById('new-name').focus();
+}
+function saveNewContact(){
+  const name=document.getElementById('new-name').value.trim();
+  const org=document.getElementById('new-org').value.trim();
+  if(!name||!org){showToast('⚠ Name and Organization are required');return;}
+  const c={
+    id:nextId(),
+    name,org,
+    orgType:document.getElementById('new-orgType').value,
+    role:document.getElementById('new-role').value.trim(),
+    relCat:document.getElementById('new-relCat').value.trim(),
+    influence:parseInt(document.getElementById('new-influence').value),
+    temp:document.getElementById('new-temp').value,
+    campaign:document.getElementById('new-campaign').value,
+    portfolio:document.getElementById('new-portfolio').value.trim(),
+    location:document.getElementById('new-location').value.trim(),
+    lastContact:document.getElementById('new-lastContact').value,
+    nextStep:document.getElementById('new-nextStep').value.trim(),
+    owner:document.getElementById('new-owner').value.trim(),
+    notes:document.getElementById('new-notes').value.trim(),
+    status:document.getElementById('new-status').value,
+    nodeType:document.getElementById('new-nodeType').value.trim(),
+  };
+  contacts.push(c);
+  ['name','org','role','relCat','portfolio','location','nextStep','notes','nodeType'].forEach(f=>document.getElementById('new-'+f).value='');
+  document.getElementById('new-influence').value='3';
+  document.getElementById('addPanel').classList.remove('open');
+  markUnsaved();
+  rebuildAll();
+  showToast('✓ '+name+' added');
+}
+
+// ── QUICK CHANGE ──────────────────────────────────────────────────────────
+function quickChange(id,field,val){
+  const c=contacts.find(x=>x.id===id);
+  if(!c)return;
+  if(field==='influence') c.influence=parseInt(val);
+  else c[field]=val;
+  markUnsaved();
+  rebuildOverview();
+  rebuildPipeline();
+  rebuildQuadrant();
+}
+
+function deleteContact(id){
+  const c = contacts.find(x=>x.id===id);
+  const label = c ? `${c.name} (${c.org||'—'})` : id;
+  if(!confirm(`Delete this contact?\n\n${label}\n\nThis cannot be undone in this file.`)) return;
+
+  contacts = contacts.filter(x=>x.id!==id);
+
+  // If modal is open for this id, close it
+  const cur = document.getElementById('edit-id');
+  if(cur && cur.value === id){
+    const modal = document.getElementById('editModal');
+    if(modal) modal.classList.remove('open');
+  }
+
+  markUnsaved();
+  rebuildAll();
+}
+
+// ── EDIT MODAL ────────────────────────────────────────────────────────────
+function openEdit(id){
+  const c=contacts.find(x=>x.id===id);
+  if(!c)return;
+  document.getElementById('edit-id').value=c.id;
+  document.getElementById('editModalTitle').textContent=c.name;
+  document.getElementById('editModalSub').textContent=c.role+' · '+c.org;
+  const fields=['name','org','orgType','role','relCat','campaign','portfolio','status','temp','location','owner','nodeType','nextStep','notes'];
+  fields.forEach(f=>{
+    const el=document.getElementById('edit-'+f);
+    if(el) el.value=c[f]||'';
+  });
+  document.getElementById('edit-influence').value=c.influence||3;
+  document.getElementById('edit-lastContact').value=c.lastContact||'';
+  document.getElementById('editModal').classList.add('open');
+}
+function saveEdit(){
+  const id=document.getElementById('edit-id').value;
+  const c=contacts.find(x=>x.id===id);
+  if(!c)return;
+  ['name','org','orgType','role','relCat','campaign','portfolio','status','temp','location','owner','nodeType','nextStep','notes','lastContact'].forEach(f=>{
+    const el=document.getElementById('edit-'+f);
+    if(el) c[f]=el.value;
+  });
+  c.influence=parseInt(document.getElementById('edit-influence').value)||3;
+  document.getElementById('editModal').classList.remove('open');
+  markUnsaved();
+  rebuildAll();
+  showToast('✓ '+c.name+' updated');
+}
+function closeEditModal(e){
+  if(e.target===document.getElementById('editModal')) document.getElementById('editModal').classList.remove('open');
+}
+
+// ── VIEW SWITCH ───────────────────────────────────────────────────────────
+function showView(name,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────────
+function rebuildOverview(){
+  document.getElementById('totalCount').textContent=contacts.length;
+
+  // KPIs
+  const met=contacts.filter(c=>["Met","Active relationship"].includes(c.status)).length;
+  const sched=contacts.filter(c=>c.status==="Scheduled").length;
+  const active=contacts.filter(c=>c.status==="Active target").length;
+  const targ=contacts.filter(c=>c.status==="Target").length;
+  const hi=contacts.filter(c=>c.influence>=4).length;
+  const warm=contacts.filter(c=>TEMP_SCORE(c.temp)>=3).length;
+  const kpis=[
+    {l:"Contacts Met",v:met,s:"active relationships",c:"#1a3a5c"},
+    {l:"Meetings Scheduled",v:sched,s:"in the queue",c:"#1e6fa8"},
+    {l:"Active Targets",v:active,s:"in active pursuit",c:"#2d6b4a"},
+    {l:"Identified Targets",v:targ,s:"yet to activate",c:"#8a9aac"},
+    {l:"High-Influence",v:hi,s:"influence ≥ 4 of 5",c:"#c4a35a"},
+    {l:"Warm or Better",v:warm,s:"of all contacts",c:"#40916c"},
+  ];
+  const kg=document.getElementById('kpi-grid');
+  kg.innerHTML=kpis.map(k=>`<div class="kpi-card" style="border-top-color:${k.c}"><div class="kpi-num" style="color:${k.c}">${k.v}</div><div class="kpi-label">${k.l}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+  // Temp bars
+  const tempGroups=[
+    {l:"Very Warm / Warm Advocate",fn:t=>/very warm|warm advocate/i.test(t),c:"#1e5c3a"},
+    {l:"Strong",fn:t=>/^strong$/i.test(t),c:"#40916c"},
+    {l:"Warm",fn:t=>/warm/i.test(t)&&!/very|advocate/i.test(t),c:"#74c69d"},
+    {l:"Friendly",fn:t=>/friendly/i.test(t),c:"#95d5b2"},
+    {l:"Neutral",fn:t=>/neutral/i.test(t),c:"#b0aa98"},
+    {l:"Unknown",fn:t=>/unknown/i.test(t)||!t,c:"#d5d1c8"},
+  ];
+  const total=contacts.length;
+  let warmCount=0;
+  const tb=document.getElementById('temp-bars');
+  tb.innerHTML=tempGroups.map(g=>{
+    const cnt=contacts.filter(c=>g.fn(c.temp||'')).length;
+    if(["Very Warm / Warm Advocate","Strong","Warm","Friendly"].includes(g.l)) warmCount+=cnt;
+    const pct=Math.round(cnt/total*100);
+    return`<div class="temp-row"><div class="temp-row-label"><span>${g.l}</span><span>${cnt} (${pct}%)</span></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${g.c}"></div></div></div>`;
+  }).join('');
+  document.getElementById('temp-insight').textContent=`${Math.round(warmCount/total*100)}% of contacts are warm or better.`;
+
+  // Camp bars
+  const cb=document.getElementById('camp-bars');
+  cb.innerHTML=Object.keys(CAMP_COLOR).map(camp=>{
+    const g=contacts.filter(c=>c.campaign===camp);
+    if(!g.length)return'';
+    const m=g.filter(c=>["Met","Active relationship"].includes(c.status)).length;
+    const s=g.filter(c=>c.status==="Scheduled").length;
+    const a=g.filter(c=>c.status==="Active target").length;
+    const t=g.filter(c=>c.status==="Target").length;
+    const avg=(g.reduce((s,c)=>s+c.influence,0)/g.length).toFixed(1);
+    return`<div class="camp-row">
+      <div class="camp-label-row">
+        <div class="camp-name"><div class="camp-dot" style="background:${CAMP_COLOR[camp]}"></div>${camp}</div>
+        <div class="camp-meta">avg ${avg}/5 · ${g.length}</div>
+      </div>
+      <div class="camp-stack">
+        ${m?`<div class="camp-seg" style="flex:${m};background:var(--status-met);color:#fff;">${m}</div>`:''}
+        ${s?`<div class="camp-seg" style="flex:${s};background:var(--status-sched);color:#fff;">${s}</div>`:''}
+        ${a?`<div class="camp-seg" style="flex:${a};background:var(--status-active);color:#fff;">${a}</div>`:''}
+        ${t?`<div class="camp-seg" style="flex:${t};background:var(--status-target);color:#555;">${t}</div>`:''}
+      </div></div>`;
+  }).join('');
+
+  // Org strip
+  const orgTypes=[
+    {l:"Foundation",match:s=>s==="Foundation",icon:"◆",c:"#1d4e7f"},
+    {l:"Government",match:s=>s.includes("Government"),icon:"■",c:"#7a3b1e"},
+    {l:"Implementer",match:s=>s.includes("Implementer"),icon:"▲",c:"#2a7d5e"},
+    {l:"Philanthropy / Nonprofit",match:s=>["Philanthropy / Evaluator","Nonprofit Research Institute"].includes(s),icon:"●",c:"#5a3d7a"},
+  ];
+  const os=document.getElementById('org-strip');
+  os.innerHTML=orgTypes.map(t=>{
+    const cnt=contacts.filter(c=>t.match(c.orgType)).length;
+    if(!cnt)return'';
+    const pct=Math.round(cnt/contacts.length*100);
+    return`<div class="org-seg" style="flex:${cnt};background:${t.c}"><div style="font-size:18px;opacity:.4;">${t.icon}</div><div><div class="org-num">${cnt}</div><div class="org-name">${t.l}</div><div class="org-pct">${pct}%</div></div></div>`;
+  }).join('');
+
+  // Node bars
+  const nodeMap={};
+  contacts.forEach(c=>{
+    (c.nodeType||'Unclassified').split('/').forEach(p=>{
+      p=p.trim()||'Unclassified';
+      nodeMap[p]=(nodeMap[p]||0)+1;
+    });
+  });
+  const sorted=Object.entries(nodeMap).sort((a,b)=>b[1]-a[1]);
+  const maxN=sorted[0][1];
+  const nodeColors={"Revenue Node":"#1d4e7f","Influence Node":"#7a3b1e","Intellectual Node":"#5a3d7a","Platform Node":"#2a7d5e","Ecosystem Node":"#3d6b8a","Advocate Node":"#1e5c3a","Unclassified":"#b0aa98"};
+  document.getElementById('node-bars').innerHTML=sorted.map(([l,cnt])=>{
+    const pct=Math.round(cnt/maxN*100);
+    const c=nodeColors[l]||"#888";
+    return`<div class="temp-row"><div class="temp-row-label"><span style="color:${c};font-weight:600;">${l}</span><span>${cnt}</span></div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${c}"></div></div></div>`;
+  }).join('');
+}
+
+// ── CONTACTS TABLE ────────────────────────────────────────────────────────
+let activeFilter="All";
+function rebuildContacts(filter){
+  if(filter!==undefined) activeFilter=filter;
+  const camps=["All",...Object.keys(CAMP_COLOR).filter(c=>contacts.some(x=>x.campaign===c))];
+  const fr=document.getElementById('filter-row');
+  fr.innerHTML=`<span class="filter-label">Campaign:</span>`
+    +camps.map(c=>`<button class="filter-btn${activeFilter===c?' active':''}" onclick="rebuildContacts('${c}')">${c}</button>`).join('')
+    +`<button class="add-btn" onclick="toggleAddPanel()">+ Add Contact</button>`
+    +`<span class="count-lbl" id="contact-count"></span>`;
+
+  const filtered=activeFilter==="All"?contacts:contacts.filter(c=>c.campaign===activeFilter);
+  document.getElementById('contact-count').textContent=filtered.length+' contacts';
+
+  const statusOpts=['Target','Active target','Scheduled','Met','Active relationship'].map(s=>`<option value="${s}">${s}</option>`).join('');
+  const tempOpts=['Very warm advocate','Warm advocate','Strong','Warm','Friendly','Neutral','Unknown'].map(t=>`<option value="${t}">${t}</option>`).join('');
+  const inflOpts=[1,2,3,4,5].map(i=>`<option value="${i}">${'★'.repeat(i)}</option>`).join('');
+
+  document.getElementById('contacts-tbody').innerHTML=filtered.map(c=>{
+    const cc=CAMP_COLOR[c.campaign]||'#888';
+    const sc=STATUS_COLOR[c.status]||'#888';
+    const tc=TEMP_COLOR(c.temp);
+    // Build selects with current values selected
+    const sOpts=['Target','Active target','Scheduled','Met','Active relationship'].map(s=>`<option value="${s}"${c.status===s?' selected':''}>${s}</option>`).join('');
+    const tOpts=['Very warm advocate','Warm advocate','Strong','Warm','Friendly','Neutral','Unknown'].map(t=>`<option value="${t}"${c.temp===t?' selected':''}>${t}</option>`).join('');
+    const iOpts=[1,2,3,4,5].map(i=>`<option value="${i}"${c.influence===i?' selected':''}>★×${i}</option>`).join('');
+    return`<tr>
+      <td class="name-cell">${c.name}</td>
+      <td style="font-size:10px;">${c.org}</td>
+      <td><select class="quick-sel" onchange="quickChange('${c.id}','status',this.value)">${sOpts}</select></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${tc};flex-shrink:0;"></span>
+          <select class="quick-sel" onchange="quickChange('${c.id}','temp',this.value);this.previousElementSibling.style.background=TEMP_COLOR(this.value)">${tOpts}</select>
+        </div>
+      </td>
+      <td><select class="quick-sel" style="max-width:70px;" onchange="quickChange('${c.id}','influence',this.value)">${iOpts}</select></td>
+      <td><span class="tag" style="background:${cc}18;color:${cc};border:1px solid ${cc}44;">${c.campaign}</span></td>
+      <td style="font-size:10px;color:var(--text-ghost);">${c.nodeType||'—'}</td>
+      <td style="font-size:10px;color:var(--text-ghost);max-width:170px;">${(c.nextStep||'').slice(0,55)}${(c.nextStep||'').length>55?'…':''}</td>
+      <td><button class="action-btn edit-btn" onclick="openEdit('${c.id}')">Edit ›</button></td>
+      <td><button class="action-btn delete-btn" onclick="deleteContact('${c.id}')">Delete</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── PIPELINE ──────────────────────────────────────────────────────────────
+function rebuildPipeline(){
+  const stages=[
+    {l:"Target",s:["Target"],c:"#8a9aac"},
+    {l:"Active Target",s:["Active target"],c:"#2d6b4a"},
+    {l:"Scheduled",s:["Scheduled"],c:"#1e6fa8"},
+    {l:"Met / Active",s:["Met","Active relationship"],c:"#1a3a5c"},
+  ];
+  const el=document.getElementById('pipeline-grid');
+  el.innerHTML=stages.map(stage=>{
+    const g=contacts.filter(c=>stage.s.includes(c.status));
+    const cards=g.map(c=>`<div style="padding:11px 13px;border-bottom:1px solid var(--cream-mid);cursor:pointer;background:#fff;transition:background .1s;"
+      onmouseenter="this.style.background='var(--cream-mid)'" onmouseleave="this.style.background='#fff'"
+      onclick="openEdit('${c.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--navy);">${c.name}</div>
+          <div style="font-size:10px;color:var(--text-ghost);margin-top:1px;">${c.org}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+          <div style="width:8px;height:8px;border-radius:50%;background:${TEMP_COLOR(c.temp)};"></div>
+          <span style="font-size:9px;color:var(--gold);">${'★'.repeat(c.influence)}</span>
+        </div>
+      </div>
+      ${c.nextStep?`<div style="font-size:10px;color:var(--gold);margin-top:5px;font-style:italic;">→ ${c.nextStep.slice(0,55)}${c.nextStep.length>55?'…':''}</div>`:''}
+    </div>`).join('');
+    return`<div>
+      <div style="padding:11px 15px;background:${stage.c};border-radius:2px 2px 0 0;display:flex;justify-content:space-between;align-items:center;color:#fff;">
+        <span style="font-size:12px;font-weight:600;">${stage.l}</span>
+        <span style="font-family:'Playfair Display',serif;font-size:22px;">${g.length}</span>
+      </div>
+      <div style="border:1px solid var(--cream-dark);border-top:none;border-radius:0 0 2px 2px;">${cards}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── QUADRANT ──────────────────────────────────────────────────────────────
+function rebuildQuadrant(){
+  const el=document.getElementById('quadrant-area');
+  // Remove old bubbles
+  el.querySelectorAll('.bubble').forEach(b=>b.remove());
+  contacts.forEach(c=>{
+    const x=(c.influence/5)*82+6;
+    const ts=TEMP_SCORE(c.temp);
+    const y=100-((ts/6)*82+6);
+    const size=10+c.influence*4;
+    const div=document.createElement('div');
+    div.className='bubble';
+    div.style.cssText=`left:${x}%;top:${y}%;width:${size}px;height:${size}px;background:${TEMP_COLOR(c.temp)};border-color:${CAMP_COLOR[c.campaign]||'#999'};`;
+    div.title=`${c.name} — ${c.org}\nInfluence: ${c.influence}/5 | ${c.temp}`;
+    div.onclick=()=>openEdit(c.id);
+    el.appendChild(div);
+  });
+  const leg=document.getElementById('quad-legend');
+  leg.innerHTML='<span style="color:#aaa;">Fill = temperature &nbsp;·&nbsp; Border = campaign &nbsp;·&nbsp; Size = influence &nbsp;&nbsp;</span>'
+    +Object.entries(CAMP_COLOR).map(([k,v])=>`<div class="legend-item"><div class="legend-swatch" style="border-color:${v};"></div><span>${k}</span></div>`).join('');
+}
+
+// ── REBUILD ALL ───────────────────────────────────────────────────────────
+// ── FOLLOW-UP RADAR (Reminders + ICS export) ───────────────────────────────
+function todayISO(){
+  const d=new Date();
+  const yyyy=d.getFullYear();
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+function parseISODate(s){
+  if(!s) return null;
+  const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m) return null;
+  return new Date(Number(m[1]), Number(m[2])-1, Number(m[3]));
+}
+function daysBetween(a,b){
+  // whole-day diff (b-a)
+  const ms=24*60*60*1000;
+  return Math.floor((b.getTime()-a.getTime())/ms);
+}
+function fmtISO(s){
+  const d=parseISODate(s);
+  if(!d) return s||"";
+  return d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+}
+function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+
+// simple “opportunity score” for sorting follow-ups
+function opportunityScore(c){
+  const influence = Number(c.influence || 3);
+  const tempMap = { "Unknown":0, "Neutral":1, "Warm":3, "Strong":4 };
+  const temp = tempMap[c.temp] ?? 0;
+
+  const last = parseISODate(c.lastContact);
+  const gap = last ? clamp(daysBetween(last, new Date()), 0, 365) : 90; // assume stale if unknown
+  // normalize gap: 0..365 => 0..5
+  const recency = clamp(Math.round((gap/365)*5), 0, 5);
+
+  // bonus if next step exists
+  const hasNext = c.nextStep && String(c.nextStep).trim() ? 1 : 0;
+
+  return (influence*2) + (temp*1.5) + (recency*1.2) + (hasNext*1.0);
+}
+
+function downloadICS({ title, description, dateISO }){
+  // Create a simple all-hands “follow-up” calendar event at 9:00am local time for 30 mins
+  const d=parseISODate(dateISO);
+  if(!d){ alert("No valid reminder date to add to calendar (need YYYY-MM-DD)."); return; }
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  // DTSTART/DTEND in local time but formatted as "floating" (no Z)
+  const y=d.getFullYear(), mo=pad(d.getMonth()+1), da=pad(d.getDate());
+  const dtStart = `${y}${mo}${da}T090000`;
+  const dtEnd   = `${y}${mo}${da}T093000`;
+  const uid = `crm-${Math.random().toString(16).slice(2)}@local`;
+
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//CRM Dashboard//Follow-up Radar//EN",
+    "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:${uid}`,
+    `DTSTAMP:${todayISO().replaceAll('-','')}T000000`,
+    `DTSTART:${dtStart}`,
+    `DTEND:${dtEnd}`,
+    `SUMMARY:${String(title||"Follow up").replaceAll('\n',' ')}`,
+    `DESCRIPTION:${String(description||"").replaceAll('\n','\\n')}`,
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\r\n");
+
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "followup.ics";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+function ensureReminderFields(c){
+  if(c.reminderStatus == null) c.reminderStatus = "none"; // none|scheduled|done|snoozed
+  if(c.nextStepDue == null) c.nextStepDue = "";           // YYYY-MM-DD
+  if(c.reminderDate == null) c.reminderDate = "";         // YYYY-MM-DD (overrides nextStepDue)
+  return c;
+}
+
+function rebuildReminders(){
+  const summaryEl = document.getElementById("reminders-summary");
+  const listEl = document.getElementById("reminders-list");
+  if(!summaryEl || !listEl) return; // panel not present (e.g., user removed it)
+
+  const today = parseISODate(todayISO());
+  const dueSoonDays = 7;
+
+  // normalize fields
+  contacts.forEach(ensureReminderFields);
+
+  const items = contacts
+    .map(c=>{
+      const due = c.reminderDate || c.nextStepDue || "";
+      const dueD = parseISODate(due);
+      if(!dueD) return null;
+      const done = (c.reminderStatus === "done");
+      const delta = daysBetween(today, dueD); // due - today
+      const status = done ? "done" : (delta < 0 ? "overdue" : (delta <= dueSoonDays ? "dueSoon" : "scheduled"));
+      return { c, due, delta, status, score: opportunityScore(c) };
+    })
+    .filter(Boolean)
+    .sort((a,b)=>{
+      // overdue first, then dueSoon, then higher score
+      const pri = { overdue:0, dueSoon:1, scheduled:2, done:3 };
+      if(pri[a.status] !== pri[b.status]) return pri[a.status]-pri[b.status];
+      return b.score - a.score;
+    });
+
+  const counts = { overdue:0, dueSoon:0, scheduled:0, done:0 };
+  items.forEach(it=>counts[it.status]++);
+
+  summaryEl.innerHTML = `
+    <span><b>${counts.overdue}</b> overdue</span>
+    <span><b>${counts.dueSoon}</b> due ≤ ${dueSoonDays}d</span>
+    <span><b>${counts.scheduled}</b> scheduled</span>
+    <span><b>${counts.done}</b> done</span>
+  `;
+
+  if(items.length === 0){
+    listEl.innerHTML = `<div style="font-size:11px;color:#777;background:var(--cream);padding:10px 12px;border-radius:2px;">
+      No reminders yet. Add <b>nextStepDue</b> or <b>reminderDate</b> to a contact.
+    </div>`;
+    return;
+  }
+
+  const chipStyle = (status) => {
+    if(status==="overdue") return "background:#8b1a1a;color:#fff;";
+    if(status==="dueSoon") return "background:#c4a35a;color:#1a2e42;";
+    if(status==="scheduled") return "background:#2e5070;color:#fff;";
+    return "background:#2d6b4a;color:#fff;";
+  };
+
+  listEl.innerHTML = items.slice(0, 20).map(it=>{
+    const c=it.c;
+    const dueLabel = fmtISO(it.due);
+    const next = (c.nextStep && String(c.nextStep).trim()) ? c.nextStep : "(no next step recorded)";
+    return `
+      <div style="border:1px solid #eee;border-radius:8px;padding:10px 12px;margin-bottom:10px;background:#fff;">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
+          <div>
+            <div style="font-weight:700;font-size:12px;color:#1a2e42;">${c.name || "(Unnamed)"}${c.org ? " · <span style='font-weight:600;color:#555;'>"+c.org+"</span>" : ""}</div>
+            <div style="font-size:11px;color:#666;margin-top:2px;">Due: <b>${dueLabel}</b> · Temp: ${c.temp||"Unknown"} · Influence: ${c.influence||3}</div>
+          </div>
+          <div style="font-size:10px;padding:4px 8px;border-radius:999px;${chipStyle(it.status)}">${it.status}</div>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#333;line-height:1.4;">${next}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <button class="pill-btn" onclick="(function(){
+            downloadICS({
+              title: 'Follow up: ${String(c.name||'').replaceAll("'","\\'")}',
+              description: '${String(next).replaceAll("\\","\\\\").replaceAll("'","\\'").replaceAll("\n","\\n")}',
+              dateISO: '${it.due}'
+            });
+          })()">📅 Add</button>
+          <button class="pill-btn" onclick="(function(){
+            const idx = contacts.findIndex(x => x.id=== '${String(c.id||"").replaceAll("'","\\'")}' );
+            if(idx>=0){ contacts[idx].reminderStatus='done'; markUnsaved(); rebuildAll(); }
+          })()">✅ Done</button>
+          <button class="pill-btn" onclick="(function(){
+            const idx = contacts.findIndex(x => x.id=== '${String(c.id||"").replaceAll("'","\\'")}' );
+            if(idx>=0){
+              const base = parseISODate(contacts[idx].reminderDate || contacts[idx].nextStepDue || todayISO()) || new Date();
+              base.setDate(base.getDate()+7);
+              const yyyy=base.getFullYear();
+              const mm=String(base.getMonth()+1).padStart(2,'0');
+              const dd=String(base.getDate()).padStart(2,'0');
+              contacts[idx].reminderDate = yyyy + '-' + mm + '-' + dd;
+              contacts[idx].reminderStatus='snoozed';
+              markUnsaved(); rebuildAll();
+            }
+          })()">⏰ +7d</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function rebuildAll(){
+  rebuildOverview();
+  rebuildContacts();
+  rebuildPipeline();
+  rebuildQuadrant();
+  rebuildReminders();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+rebuildAll();
+</script>
+
+<!-- BEGIN: CRM Chat Widget (AI-enabled) -->
+<style>
+#crmChatLauncher{
+  position:fixed;right:18px;bottom:18px;z-index:501;
+  background:#1b4965;color:#fff;border:none;border-radius:999px;
+  padding:10px 14px;box-shadow:0 12px 30px rgba(0,0,0,.18);
+  cursor:pointer;font-size:13px;
+}
+#crmChat{
+  position:fixed;right:18px;bottom:18px;width:380px;max-width:92vw;
+  background:#fff;border:1px solid #ddd;border-radius:10px;
+  box-shadow:0 12px 40px rgba(0,0,0,.18);
+  overflow:hidden;z-index:500;
+  font-family: Arial, sans-serif;
+  display:none;
+}
+#crmChat .crmHeader{
+  background:#1b4965;color:#fff;padding:10px 12px;font-size:13px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+#crmChat .crmMsgs{
+  padding:10px 12px;height:280px;overflow:auto;font-size:13px;line-height:1.35;
+  background:#faf9f6;
+}
+#crmChat .crmInputRow{
+  display:flex;gap:8px;padding:10px 12px;border-top:1px solid #eee;background:#fff;
+}
+#crmChat input[type="text"]{
+  flex:1;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;
+}
+#crmChat button.crmSendBtn{
+  padding:8px 12px;background:#1b4965;color:#fff;border:none;border-radius:8px;
+  cursor:pointer;font-size:13px;
+}
+#crmChat button.crmSendBtn:disabled{opacity:.6;cursor:not-allowed;}
+.crmRole{font-weight:700;margin:8px 0 4px;}
+.crmRole.user{color:#0b3b57;}
+.crmRole.ai{color:#2d6b4a;}
+.crmBubble{color:#333;margin-bottom:10px;white-space:pre-wrap;}
+.crmHint{color:#666;font-size:12px;margin:4px 0 10px;font-style:italic;}
+</style>
+
+<button id="crmChatLauncher" type="button">Chat</button>
+
+<div id="crmChat" aria-live="polite">
+  <div class="crmHeader">
+    <span>CRM Chat</span>
+    <button type="button" id="crmChatCloseBtn" style="background:transparent;border:none;color:#cfe0ee;font-size:16px;cursor:pointer;">✕</button>
+  </div>
+  <div id="crmChatMsgs" class="crmMsgs">
+    <div class="crmHint">Try: “Summarize next steps for Gates warm contacts” or “Add contact: Jane Doe, Program Officer at X”.</div>
+  </div>
+  <div class="crmInputRow">
+    <input id="crmChatInput" type="text" placeholder="Ask, or: Add contact: ..." />
+    <button class="crmSendBtn" id="crmChatSendBtn" type="button">Send</button>
+  </div>
+</div>
+
+<script>
+/**
+ * AI Chat integration:
+ * - Requires a backend endpoint: POST /api/crm-chat  (see server.js I provided)
+ * - Sends: { message, contacts } where contacts is your in-page contacts array
+ * - Receives: { assistant_message, action, contact, followup_questions }
+ * - If action === "upsert_contact", merges contact into your contacts[] and calls rebuildAll()
+ *
+ * NOTE: If you open this HTML via file://, browser fetch to a server won't work.
+ * Serve it via Node/Express (recommended) or any local web server.
+ */
+
+(function(){
+  const launcher = document.getElementById("crmChatLauncher");
+  const panel    = document.getElementById("crmChat");
+  const closeBtn = document.getElementById("crmChatCloseBtn");
+  const msgsEl   = document.getElementById("crmChatMsgs");
+  const inputEl  = document.getElementById("crmChatInput");
+  const sendBtn  = document.getElementById("crmChatSendBtn");
+
+  let sending = false;
+
+  function openChat(){ panel.style.display = "block"; launcher.style.display = "none"; inputEl.focus(); }
+  function closeChat(){ panel.style.display = "none"; launcher.style.display = "block"; }
+
+  function escapeHtml(s){
+    if(!s) return "";
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;");
+  }
+
+  function addMsg(role, text, allowHtml=false){
+    const wrap = document.createElement("div");
+    wrap.innerHTML = `
+      <div class="crmRole ${role}">${role === "user" ? "You" : "Assistant"}</div>
+      <div class="crmBubble">${allowHtml ? text : escapeHtml(text)}</div>
+    `;
+    msgsEl.appendChild(wrap);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+  }
+
+  function getContacts(){
+    try { if(typeof contacts !== "undefined" && Array.isArray(contacts)) return contacts; } catch(e){}
+    return [];
+  }
+
+  function nextIdSafe(){
+    try { if(typeof nextId === "function") return nextId(); } catch(e){}
+    return "C-" + String(Math.floor(Math.random()*9000)+1000);
+  }
+
+  function normalizeContact(c){
+    const out = Object.assign({}, c || {});
+    if(!out.id) out.id = nextIdSafe();
+    if(!out.influence) out.influence = 3;
+    if(!out.temp) out.temp = "Unknown";
+    if(!out.status) out.status = "Target";
+    if(out.nextStepDue == null) out.nextStepDue = "";
+    if(out.reminderDate == null) out.reminderDate = "";
+    if(out.reminderStatus == null) out.reminderStatus = "none";
+    if(!out.owner) out.owner = "Jeff";
+    return out;
+  }
+
+  function upsertContact(contact){
+    const c = normalizeContact(contact);
+    const arr = getContacts();
+    const idx = arr.findIndex(x => String(x.id) === String(c.id) || (c.name && x.name === c.name && x.org === c.org));
+    if(idx >= 0) arr[idx] = Object.assign({}, arr[idx], c);
+    else arr.push(c);
+
+    try { if(typeof markUnsaved === "function") markUnsaved(); } catch(e){}
+    try { if(typeof rebuildAll === "function") rebuildAll(); } catch(e){}
+
+    return c;
+  }
+
+  async function callBackend(message){
+    const resp = await fetch("/api/crm-chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, contacts: getContacts() })
+    });
+    if(!resp.ok) throw new Error("HTTP " + resp.status);
+    return await resp.json();
+  }
+
+  async function send(){
+    if(sending) return;
+    const msg = (inputEl.value || "").trim();
+    if(!msg) return;
+
+    // If opened as file://, guide user
+    if(window.location.protocol === "file:"){
+      addMsg("assistant",
+        "This page is opened via file://, so it can’t call the AI server.\n\nRun the provided Node server (npm start) and open http://localhost:3000 instead.");
+      inputEl.value = "";
+      return;
+    }
+
+    sending = true;
+    sendBtn.disabled = true;
+
+    addMsg("user", msg);
+    inputEl.value = "";
+
+    // placeholder
+    const placeholder = document.createElement("div");
+    placeholder.innerHTML = `<div class="crmRole ai">Assistant</div><div class="crmBubble">…</div>`;
+    msgsEl.appendChild(placeholder);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+
+    try {
+      const data = await callBackend(msg);
+
+      // replace placeholder
+      placeholder.querySelector(".crmBubble").innerHTML = data.assistant_message ? data.assistant_message : "—";
+
+      if(data.action === "upsert_contact" && data.contact){
+        const saved = upsertContact(data.contact);
+        // add a small confirmation line
+        const extra = document.createElement("div");
+        extra.innerHTML = `<div class="crmHint">Saved: <b>${escapeHtml(saved.name||"")}</b>${saved.org ? " · " + escapeHtml(saved.org) : ""}</div>`;
+        msgsEl.appendChild(extra);
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+      }
+
+      if(Array.isArray(data.followup_questions) && data.followup_questions.length){
+        const list = "<ul style='margin:6px 0 0 18px;'>" + data.followup_questions.map(q => "<li>"+escapeHtml(q)+"</li>").join("") + "</ul>";
+        const extra = document.createElement("div");
+        extra.innerHTML = `<div class="crmHint">Quick follow-ups:</div>${list}`;
+        msgsEl.appendChild(extra);
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+      }
+    } catch(e){
+      placeholder.querySelector(".crmBubble").textContent =
+        "AI request failed. Make sure the Node server is running, and the page is opened via http://localhost:3000.\n\nError: " + (e.message || e);
+    } finally {
+      sending = false;
+      sendBtn.disabled = false;
+      inputEl.focus();
+    }
+  }
+
+  launcher.addEventListener("click", openChat);
+  closeBtn.addEventListener("click", closeChat);
+  sendBtn.addEventListener("click", send);
+  inputEl.addEventListener("keydown", (e) => {
+    if(e.key === "Enter"){ e.preventDefault(); send(); }
+  });
+
+  // start with launcher visible
+  launcher.style.display = "block";
+})();
+</script>
+<!-- END: CRM Chat Widget (AI-enabled) -->
+</body>
+</html>
