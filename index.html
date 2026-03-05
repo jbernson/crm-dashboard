@@ -72,7 +72,7 @@ export default {
       store: false,
     };
 
-    const r = await fetch("https://crm-ai-relay-2.jbernson.workers.dev/", {
+    const r = await fetch("https://api.openai/v1/responses", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${env.OPENAI_API_KEY}`,
