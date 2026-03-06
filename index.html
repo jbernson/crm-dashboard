@@ -1091,9 +1091,31 @@ function rebuildAll(){
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────
-contacts = contacts.map(normalizeContactForStorage);
-saveContacts(contacts);
-rebuildAll();
+async function syncContactsFromCloud(){
+  try {
+    const resp = await fetch("https://crm-ai-relay-2.jbernson.workers.dev/");
+    const data = await resp.json();
+
+    if (data && Array.isArray(data.contacts)) {
+      contacts = data.contacts.map(normalizeContactForStorage);
+      saveContacts(contacts);
+      rebuildAll();
+      return true;
+    }
+  } catch (e) {
+    console.warn("Cloud sync failed:", e);
+  }
+  return false;
+}
+
+async function initDashboard(){
+  contacts = contacts.map(normalizeContactForStorage);
+  saveContacts(contacts);
+  rebuildAll();
+
+  await syncContactsFromCloud();
+}
+
 </script>
 <!-- BEGIN: CRM Chat Widget (AI-enabled) -->
 <style>
