@@ -1132,7 +1132,7 @@ rebuildAll();
   }
 
   async function callBackend(message){
-    const resp = await fetch("/api/crm-chat", {
+    const resp = await fetch("https://crm-ai-relay-2.jbernson.workers.dev/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message, contacts: getContacts() })
