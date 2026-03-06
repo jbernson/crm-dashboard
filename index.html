@@ -1137,7 +1137,14 @@ rebuildAll();
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message, contacts: getContacts() })
     });
-    if(!resp.ok) throw new Error("HTTP " + resp.status);
+    const resp = await fetch("https://crm-ai-relay-2.jbernson.workers.dev/", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ message, contacts: getContacts() })
+});
+
+const data = await resp.json();
+return data;
     return await resp.json();
   }
 
