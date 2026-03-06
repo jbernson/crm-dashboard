@@ -1257,7 +1257,8 @@ async function callBackend(message){
       const data = await callBackend(msg);
 
       // replace placeholder
-      placeholder.querySelector(".crmBubble").innerHTML = data.assistant_message ? data.assistant_message : "—";
+      placeholder.querySelector(".crmBubble").textContent =
+  data.assistant_message ? data.assistant_message : "—";
 
       if(data.action === "upsert_contact" && data.contact){
         const saved = upsertContact(data.contact);
