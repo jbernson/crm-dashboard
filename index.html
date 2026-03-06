@@ -497,9 +497,21 @@ function downloadCSV(){
 
 // ── NEXT AVAILABLE ID ─────────────────────────────────────────────────────
 function nextId(){
-  const nums=contacts.map(c=>parseInt(String(c.id||'').replace('C-',''))||0);
-  return 'C-'+(Math.max(0,...nums)+1).toString().padStart(4,'0');
+
+  const nums = contacts
+    .map(c => {
+      if(!c.id) return 0;
+      const n = parseInt(c.id.replace("C-",""),10);
+      return isNaN(n) ? 0 : n;
+    });
+
+  const max = nums.length ? Math.max(...nums) : 0;
+
+  const next = max + 1;
+
+  return "C-" + String(next).padStart(4,"0");
 }
+
 function norm(s){
   return (s || "").toString().trim().toLowerCase().replace(/\s+/g,' ');
 }
