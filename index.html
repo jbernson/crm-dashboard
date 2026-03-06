@@ -534,19 +534,39 @@ function persistContacts(){
   markUnsaved();
 }
 function upsertPersistentContact(contact){
+
   const c = normalizeContactForStorage(contact);
+
   const idx = contacts.findIndex(x =>
     (c.id && String(x.id) === String(c.id)) ||
     (contactKey(x) === contactKey(c))
   );
+
   if(idx >= 0){
-    contacts[idx] = Object.assign({}, contacts[idx], c, { id: contacts[idx].id });
+    contacts[idx] = { ...contacts[idx], ...c, id: contacts[idx].id };
   } else {
-    if(!c.id || contacts.some(x => x.id === c.id)) c.id = nextId();
-    contacts.push(normalizeContactForStorage(c));
+
+    if(!c.id || contacts.some(x => x.id === c.id)){
+      c.id = nextId();
+    }
+
+    contacts.push(c);
   }
-  persistContacts();
-  rebuildAll();
+
+  // persist data
+  saveContacts(contacts);
+
+  // force dashboard refresh
+  rebuildOverview();
+  rebuildPipeline();
+  rebuildQuadrant();
+  rebuildReminders();
+
+  // rebuild contacts table if present
+  if(typeof rebuildContacts === "function"){
+    rebuildContacts();
+  }
+
   return c;
 }
 
