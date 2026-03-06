@@ -1095,7 +1095,6 @@ contacts = contacts.map(normalizeContactForStorage);
 saveContacts(contacts);
 rebuildAll();
 </script>
-
 <!-- BEGIN: CRM Chat Widget (AI-enabled) -->
 <style>
 #crmChatLauncher{
@@ -1155,17 +1154,6 @@ rebuildAll();
 </div>
 
 <script>
-/**
- * AI Chat integration:
- * - Requires a backend endpoint: POST /api/crm-chat  (see server.js I provided)
- * - Sends: { message, contacts } where contacts is your in-page contacts array
- * - Receives: { assistant_message, action, contact, followup_questions }
- * - If action === "upsert_contact", merges contact into your contacts[] and calls rebuildAll()
- *
- * NOTE: If you open this HTML via file://, browser fetch to a server won't work.
- * Serve it via Node/Express (recommended) or any local web server.
- */
-
 (function(){
   const launcher = document.getElementById("crmChatLauncher");
   const panel    = document.getElementById("crmChat");
@@ -1202,11 +1190,6 @@ rebuildAll();
     return [];
   }
 
-  function nextIdSafe(){
-    try { if(typeof nextId === "function") return nextId(); } catch(e){}
-    return "C-" + String(Math.floor(Math.random()*9000)+1000);
-  }
-
   function normalizeContact(c){
     return normalizeContactForStorage(c);
   }
@@ -1215,40 +1198,56 @@ rebuildAll();
     return upsertPersistentContact(contact);
   }
 
-async function callBackend(message){
-  const resp = await fetch("https://crm-ai-relay-2.jbernson.workers.dev/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, contacts: getContacts() })
-  });
+  async function callBackend(message){
+    const resp = await fetch("https://crm-ai-relay-2.jbernson.workers.dev/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, contacts: getContacts() })
+    });
 
-  const data = await resp.json();
+    const text = await resp.text();
 
-  if (
-    data &&
-    typeof data.assistant_message === "string" &&
-    data.assistant_message.trim().startsWith("{")
-  ) {
+    let data;
     try {
-      const nested = JSON.parse(data.assistant_message);
-      if (nested && typeof nested === "object") {
-        return nested;
-      }
-    } catch (e) {}
-  }
+      data = JSON.parse(text);
+    } catch (e) {
+      return {
+        assistant_message: text || "No response",
+        action: "none",
+        contact: null,
+        followup_questions: []
+      };
+    }
 
-  return data;
-}
+    if (
+      data &&
+      typeof data.assistant_message === "string" &&
+      data.assistant_message.trim().startsWith("{")
+    ) {
+      try {
+        const nested = JSON.parse(data.assistant_message);
+        if (nested && typeof nested === "object") {
+          data = nested;
+        }
+      } catch (e) {}
+    }
+
+    return {
+      assistant_message: data.assistant_message || "No response",
+      action: data.action || "none",
+      contact: data.contact && typeof data.contact === "object" ? data.contact : null,
+      followup_questions: Array.isArray(data.followup_questions) ? data.followup_questions : []
+    };
+  }
 
   async function send(){
     if(sending) return;
     const msg = (inputEl.value || "").trim();
     if(!msg) return;
 
-    // If opened as file://, guide user
     if(window.location.protocol === "file:"){
       addMsg("assistant",
-        "This page is opened via file://, so it can’t call the AI server.\n\nRun the provided Node server (npm start) and open http://localhost:3000 instead.");
+        "This page is opened via file://, so it can’t call the AI worker.\n\nOpen the GitHub Pages version of this dashboard instead.");
       inputEl.value = "";
       return;
     }
@@ -1259,7 +1258,6 @@ async function callBackend(message){
     addMsg("user", msg);
     inputEl.value = "";
 
-    // placeholder
     const placeholder = document.createElement("div");
     placeholder.innerHTML = `<div class="crmRole ai">Assistant</div><div class="crmBubble">…</div>`;
     msgsEl.appendChild(placeholder);
@@ -1268,13 +1266,15 @@ async function callBackend(message){
     try {
       const data = await callBackend(msg);
 
-      // replace placeholder
       placeholder.querySelector(".crmBubble").textContent =
-  data.assistant_message ? data.assistant_message : "—";
+        data.assistant_message ? data.assistant_message : "—";
 
-      if(data.action === "upsert_contact" && data.contact){
+      if (
+        data.contact &&
+        data.contact.name &&
+        data.action !== "ask_followups"
+      ) {
         const saved = upsertContact(data.contact);
-        // add a small confirmation line
         const extra = document.createElement("div");
         extra.innerHTML = `<div class="crmHint">Saved: <b>${escapeHtml(saved.name||"")}</b>${saved.org ? " · " + escapeHtml(saved.org) : ""}</div>`;
         msgsEl.appendChild(extra);
@@ -1290,7 +1290,7 @@ async function callBackend(message){
       }
     } catch(e){
       placeholder.querySelector(".crmBubble").textContent =
-        "AI request failed. Make sure the Node server is running, and the page is opened via http://localhost:3000.\n\nError: " + (e.message || e);
+        "AI request failed.\n\nError: " + (e.message || e);
     } finally {
       sending = false;
       sendBtn.disabled = false;
@@ -1305,7 +1305,6 @@ async function callBackend(message){
     if(e.key === "Enter"){ e.preventDefault(); send(); }
   });
 
-  // start with launcher visible
   launcher.style.display = "block";
 })();
 </script>
