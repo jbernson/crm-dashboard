@@ -1203,15 +1203,30 @@ rebuildAll();
     return upsertPersistentContact(contact);
   }
 
-  async function callBackend(message){
-    const resp = await fetch("https://crm-ai-relay-2.jbernson.workers.dev/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, contacts: getContacts() })
-    });
-    const data = await resp.json();
-    return data;
+async function callBackend(message){
+  const resp = await fetch("https://crm-ai-relay-2.jbernson.workers.dev/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, contacts: getContacts() })
+  });
+
+  const data = await resp.json();
+
+  if (
+    data &&
+    typeof data.assistant_message === "string" &&
+    data.assistant_message.trim().startsWith("{")
+  ) {
+    try {
+      const nested = JSON.parse(data.assistant_message);
+      if (nested && typeof nested === "object") {
+        return nested;
+      }
+    } catch (e) {}
   }
+
+  return data;
+}
 
   async function send(){
     if(sending) return;
