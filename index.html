@@ -633,20 +633,25 @@ function quickChange(id,field,val){
 }
 
 function deleteContact(id){
-  const c = contacts.find(x=>x.id===id);
-  const label = c ? `${c.name} (${c.org||'—'})` : id;
-  if(!confirm(`Delete this contact?\n\n${label}\n\nThis cannot be undone in this file.`)) return;
-
-  contacts = contacts.filter(x=>x.id!==id);
-
-  // If modal is open for this id, close it
-  const cur = document.getElementById('edit-id');
-  if(cur && cur.value === id){
-    const modal = document.getElementById('editModal');
-    if(modal) modal.classList.remove('open');
+  const sid = String(id || "");
+  const idx = contacts.findIndex(x => String(x.id || "") === sid);
+  if(idx < 0){
+    showToast("Unable to find that contact to delete. Please refresh and try again.");
+    return;
   }
 
-  markUnsaved();
+  const c = contacts[idx];
+  const label = `${c.name || sid} (${c.org || "—"})`;
+  if(!confirm(`Delete this contact?\n\n${label}\n\nThis cannot be undone in this file.`)) return;
+
+  // remove in-memory
+  contacts.splice(idx, 1);
+
+  // persist immediately
+  saveContacts(contacts);
+
+  // re-read what was saved, then rebuild
+  contacts = loadContacts();
   rebuildAll();
 }
 
